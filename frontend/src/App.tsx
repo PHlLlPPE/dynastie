@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { cards, Card as CardType } from "./data/cards";
+import { useState } from "react";
+import { cards } from "./data/cards";
 import Card from "./components/Card";
 import Jauges from "./components/Jauges";
 import { getJauges, saveJauges } from "./utils/storage";
@@ -8,6 +8,7 @@ function App() {
   const [index, setIndex] = useState(0);
   const [jauges, setJauges] = useState(getJauges());
   const [gameOver, setGameOver] = useState(false);
+  const [started, setStarted] = useState(false);
 
   const handleChoix = (effets: any) => {
     const newJauges = { ...jauges };
@@ -19,7 +20,6 @@ function App() {
       );
     }
 
-    // Vérifie si une jauge est à 0 ou 100
     const jaugePerdue = Object.entries(newJauges).find(
       ([_, valeur]) => valeur <= 0 || valeur >= 100
     );
@@ -44,11 +44,29 @@ function App() {
     saveJauges(resetJauges);
     setIndex(0);
     setGameOver(false);
+    setStarted(true);
+  };
+
+  const handleStart = () => {
+    handleRestart();
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 p-4">
-      {!gameOver ? (
+      {!started ? (
+        <div className="text-center bg-white p-6 rounded-xl shadow-xl max-w-lg">
+          <h1 className="text-3xl font-bold mb-4">Dynastie</h1>
+          <p className="text-lg mb-6">
+            Prenez des décisions cruciales pour votre royaume. Restez en équilibre... ou tombez.
+          </p>
+          <button
+            onClick={handleStart}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-bold"
+          >
+            Commencer la partie
+          </button>
+        </div>
+      ) : !gameOver ? (
         <>
           <Jauges jauges={jauges} />
           <Card card={cards[index]} onChoix={handleChoix} />
