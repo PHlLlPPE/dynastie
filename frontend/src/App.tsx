@@ -9,9 +9,12 @@ function App() {
   const [jauges, setJauges] = useState(getJauges());
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
+  const [historique, setHistorique] = useState<number[]>([]);
 
   const handleChoix = (effets: any) => {
     const newJauges = { ...jauges };
+
+    // Appliquer les effets
     for (const [cle, val] of Object.entries(effets)) {
       newJauges[cle as keyof typeof jauges] += val;
       newJauges[cle as keyof typeof jauges] = Math.max(
@@ -20,6 +23,7 @@ function App() {
       );
     }
 
+    // Vérifie si une jauge atteint 0 ou 100
     const jaugePerdue = Object.entries(newJauges).find(
       ([_, valeur]) => valeur <= 0 || valeur >= 100
     );
@@ -27,9 +31,21 @@ function App() {
     if (jaugePerdue) {
       setGameOver(true);
     } else {
+      // Sauvegarde et passe à une nouvelle carte
       setJauges(newJauges);
       saveJauges(newJauges);
-      setIndex((prev) => (prev + 1) % cards.length);
+      const nouvelHistorique = [...historique, cards[index].id];
+      setHistorique(nouvelHistorique);
+
+      // Filtrer les cartes valides
+      const cartesValides = cards.filter(
+        (c) =>
+          !c.condition || c.condition(newJauges, nouvelHistorique)
+      );
+
+      // Choisir aléatoirement parmi les cartes valides
+      const nextIndex = Math.floor(Math.random() * cartesValides.length);
+      setIndex(nextIndex);
     }
   };
 
@@ -42,6 +58,7 @@ function App() {
     };
     setJauges(resetJauges);
     saveJauges(resetJauges);
+    setHistorique([]);
     setIndex(0);
     setGameOver(false);
     setStarted(true);
@@ -57,7 +74,7 @@ function App() {
         <div className="text-center bg-white p-6 rounded-xl shadow-xl max-w-lg">
           <h1 className="text-3xl font-bold mb-4">Dynastie</h1>
           <p className="text-lg mb-6">
-            Prenez des décisions cruciales pour votre royaume. Restez en équilibre... ou tombez.
+            Prenez des décisions cruciales pour votre royaume. Gardez l’équilibre… ou tombez.
           </p>
           <button
             onClick={handleStart}
